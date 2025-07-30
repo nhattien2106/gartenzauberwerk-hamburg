@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .career-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e9ecef;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Personal Information Form API Test</h1>
+        
+        <h2>Test Career Options</h2>
+        <button onclick="testCareerOptions()">Get Career Options</button>
+        <div id="career-results"></div>
+        
+        <h2>Test Registration</h2>
+        <button onclick="testRegistration()">Test Registration</button>
+        <div id="registration-results"></div>
+        
+        <h2>Raw API Response</h2>
+        <pre id="raw-response"></pre>
+    </div>
+
+    <script>
+        async function testCareerOptions() {
+            try {
+                const response = await fetch('http://localhost:8000/api/index.php?path=career-options');
+                const data = await response.json();
+                
+                document.getElementById('career-results').innerHTML = `
+                    <div class="success">✅ Career options loaded successfully!</div>
+                    <h3>Available Career Options:</h3>
+                    ${data.map(option => `
+                        <div class="career-option">
+                            <strong>ID:</strong> ${option.id} | 
+                            <strong>Status:</strong> ${option.status_name}
+                        </div>
+                    `).join('')}
+                `;
+                
+                document.getElementById('raw-response').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('career-results').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function testRegistration() {
+            const testData = {
+                first_name: "John",
+                last_name: "Doe",
+                email: "john@example.com",
+                mobile: "+49123456789",
+                date_of_birth: "1990-01-01"
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/index.php?path=register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('registration-results').innerHTML = `
+                    <div class="success">✅ Registration test successful!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('registration-results').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

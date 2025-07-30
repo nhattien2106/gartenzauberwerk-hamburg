@@ -1,0 +1,12 @@
+# Enable URL rewriting (clean URLs)
+RewriteEngine On
+
+# If the requested file doesn't exist
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# And the requested directory doesn't exist
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Then rewrite the URL to our API index file
+# This allows URLs like /api/register instead of /api/index.php?path=register
+RewriteRule ^(.*)$ api/index.php?path=$1 [QSA,L]
