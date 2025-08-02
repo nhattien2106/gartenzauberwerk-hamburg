@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import PersonalInfoForm from '@/components/PersonalInfoForm';
 import Navbar from '@/components/Navbar';
 

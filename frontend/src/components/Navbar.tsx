@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
@@ -17,9 +18,11 @@ const Navbar = () => {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <img 
+              <Image 
                 src="/images/Logo_GZW_Horizontal_300x65px.png" 
                 alt="Gartenzauberwerk Logo" 
+                width={300}
+                height={65}
                 className="h-6 sm:h-8 lg:h-10 w-auto"
               />
             </div>

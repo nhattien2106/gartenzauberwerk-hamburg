@@ -141,7 +141,7 @@ export default function PersonalInfoForm() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Einreichung fehlgeschlagen' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Netzwerkfehler. Bitte versuchen Sie es erneut.' });
     } finally {
       setLoading(false);
@@ -777,7 +777,7 @@ export default function PersonalInfoForm() {
                 <div className="space-y-3 sm:space-y-4">
                   <div>
                     <p className="text-sm text-black mb-3">
-                      Liegt zu Beginn des Beschäftigungsverhältnisses eine Meldung als arbeits- oder ausbildungssuchend bei der Agentur für Arbeit vor oder/und lautet der dortige Status „beschäftigungslos"?
+                      Liegt zu Beginn des Beschäftigungsverhältnisses eine Meldung als arbeits- oder ausbildungssuchend bei der Agentur für Arbeit vor oder/und lautet der dortige Status &ldquo;beschäftigungslos&rdquo;?
                     </p>
                     <div className="space-y-2">
                       <div className="flex items-center">
