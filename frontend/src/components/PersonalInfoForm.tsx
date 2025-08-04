@@ -45,10 +45,12 @@ interface FormData {
   kurzfristige_bis: string;
   notizen: string;
   
-
-  
   // Declaration
   erklarung_datum: string;
+}
+
+interface ValidationErrors {
+  [key: string]: string;
 }
 
 export default function PersonalInfoForm() {
@@ -56,6 +58,7 @@ export default function PersonalInfoForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [formData, setFormData] = useState<FormData>({
     vor_nachname: '',
     anschrift: '',
@@ -99,24 +102,162 @@ export default function PersonalInfoForm() {
 
   const fetchCareerOptions = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/index.php?path=career-options');
+      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=career-options');
       const data = await response.json();
       setCareerOptions(data);
     } catch (error) {
       console.error('Error fetching career options:', error);
+      // Fallback to mock data when backend is not available
+      const mockOptions = [
+        { id: 1, status_name: 'Schüler/in' },
+        { id: 2, status_name: 'Auszubildende/r' },
+        { id: 3, status_name: 'Student/in' },
+        { id: 4, status_name: 'Angestellte/r' },
+        { id: 5, status_name: 'Arbeitssuchend' },
+        { id: 6, status_name: 'Rentner/in' },
+        { id: 7, status_name: 'Sonstiges' }
+      ];
+      setCareerOptions(mockOptions);
+    }
+  };
+
+  // Validation functions
+  const validateEmail = (email: string): string | null => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return 'E-Mail ist erforderlich';
+    if (!emailRegex.test(email)) return 'Ungültige E-Mail-Adresse';
+    return null;
+  };
+
+  const validateIBAN = (iban: string): string | null => {
+    if (!iban) return 'IBAN ist erforderlich';
+    if (iban.length < 15 || iban.length > 34) return 'IBAN muss zwischen 15 und 34 Zeichen lang sein';
+    return null;
+  };
+
+  const validateDate = (date: string): string | null => {
+    if (!date) return null;
+    const dateObj = new Date(date);
+    const today = new Date();
+    if (dateObj > today) return 'Datum kann nicht in der Zukunft liegen';
+    return null;
+  };
+
+  const validateRequired = (value: string, fieldName: string): string | null => {
+    if (!value || value.trim() === '') return `${fieldName} ist erforderlich`;
+    return null;
+  };
+
+  const validateField = (name: string, value: string): string | null => {
+    switch (name) {
+      case 'email':
+        return validateEmail(value);
+      case 'iban':
+        return validateIBAN(value);
+      case 'geburt_am':
+        return validateDate(value);
+      case 'vor_nachname':
+        return validateRequired(value, 'Vor & Nachname');
+      case 'anschrift':
+        return validateRequired(value, 'Anschrift');
+      case 'mobil':
+        return validateRequired(value, 'Mobil');
+      case 'in':
+        return validateRequired(value, 'Geburtsort');
+      case 'status':
+        return validateRequired(value, 'Status');
+      case 'geschlecht':
+        return validateRequired(value, 'Geschlecht');
+      case 'familienstand':
+        return validateRequired(value, 'Familienstand');
+      case 'staatsangehoerigkeit':
+        return validateRequired(value, 'Staatsangehörigkeit');
+      case 'bewoerbene_position':
+        return validateRequired(value, 'Beworbene Position');
+      default:
+        return null;
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    
+    // Debug logging for radio button changes
+    if (type === 'radio') {
+      console.log('Radio button changed:', { name, value, type });
+    }
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      };
+      
+      // Debug logging for form data updates
+      if (type === 'radio') {
+        console.log('Form data updated:', newData);
+      }
+      
+      return newData;
+    });
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: error || ''
     }));
+  };
+
+  // Helper function to render error message
+  const renderError = (fieldName: string) => {
+    const error = validationErrors[fieldName];
+    if (error) {
+      return <div className="text-red-500 text-xs mt-1">{error}</div>;
+    }
+    return null;
+  };
+
+  // Helper function to get input className with validation styling
+  const getInputClassName = (fieldName: string) => {
+    const baseClass = "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 text-black";
+    const hasError = validationErrors[fieldName];
+    
+    if (hasError) {
+      return `${baseClass} border-red-500 focus:ring-red-500`;
+    }
+    return `${baseClass} border-gray-300 focus:ring-blue-500`;
+  };
+
+  // Validate all fields before submission
+  const validateAllFields = (): boolean => {
+    const errors: ValidationErrors = {};
+    
+    // Validate all required fields
+    const requiredFields = [
+      'vor_nachname', 'anschrift', 'mobil', 'email', 'geburt_am', 'in',
+      'status', 'geschlecht', 'familienstand', 'staatsangehoerigkeit', 'bewoerbene_position', 'iban'
+    ];
+    
+    requiredFields.forEach(field => {
+      const error = validateField(field, formData[field as keyof FormData] as string);
+      if (error) {
+        errors[field] = error;
+      }
+    });
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateAllFields()) {
+      setMessage({ type: 'error', text: 'Bitte korrigieren Sie die Fehler im Formular.' });
+      return;
+    }
+    
     setShowReview(true);
   };
 
@@ -125,7 +266,7 @@ export default function PersonalInfoForm() {
     setMessage(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/index.php?path=register', {
+      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,8 +282,19 @@ export default function PersonalInfoForm() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Einreichung fehlgeschlagen' });
       }
-    } catch {
-      setMessage({ type: 'error', text: 'Netzwerkfehler. Bitte versuchen Sie es erneut.' });
+    } catch (error) {
+      console.error('Backend not available, using local storage:', error);
+      // Store data locally when backend is not available
+      const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+      submissions.push({
+        ...formData,
+        id: Date.now(),
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('formSubmissions', JSON.stringify(submissions));
+      
+      setMessage({ type: 'success', text: 'Formular erfolgreich gespeichert (lokaler Speicher)!' });
+      setShowReview(false);
     } finally {
       setLoading(false);
     }
@@ -150,11 +302,16 @@ export default function PersonalInfoForm() {
 
   const exportToPDF = async () => {
     try {
+      // Debug logging for PDF export
+      console.log('Exporting PDF with form data:', formData);
+      
       // Convert formData to PDFFormData format
       const pdfFormData: PDFFormData = {
         ...formData,
         mitglied_kv: formData.mitglied_kv === 'Ja' ? true : false
       };
+      
+      console.log('PDF form data after conversion:', pdfFormData);
       
       await generateMitarbeiterstammdatenPDF(pdfFormData);
       setMessage({ type: 'success', text: 'PDF erfolgreich erstellt!' });
@@ -430,8 +587,9 @@ export default function PersonalInfoForm() {
                       value={formData.vor_nachname}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className={getInputClassName('vor_nachname')}
                     />
+                    {renderError('vor_nachname')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
@@ -443,8 +601,9 @@ export default function PersonalInfoForm() {
                       onChange={handleInputChange}
                       required
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className={getInputClassName('anschrift')}
                     />
+                    {renderError('anschrift')}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
@@ -469,8 +628,9 @@ export default function PersonalInfoForm() {
                         value={formData.mobil}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className={getInputClassName('mobil')}
                       />
+                      {renderError('mobil')}
                     </div>
                   </div>
                   <div>
@@ -483,8 +643,9 @@ export default function PersonalInfoForm() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className={getInputClassName('email')}
                     />
+                    {renderError('email')}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
@@ -497,8 +658,9 @@ export default function PersonalInfoForm() {
                         value={formData.geburt_am}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className={getInputClassName('geburt_am')}
                       />
+                      {renderError('geburt_am')}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-black mb-1">
@@ -510,8 +672,9 @@ export default function PersonalInfoForm() {
                         value={formData.in}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className={getInputClassName('in')}
                       />
+                      {renderError('in')}
                     </div>
                   </div>
                 </div>
@@ -595,6 +758,7 @@ export default function PersonalInfoForm() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
+                    {renderError('familienstand')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
@@ -619,6 +783,7 @@ export default function PersonalInfoForm() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
+                    {renderError('hoechster_abschluss')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
@@ -631,6 +796,7 @@ export default function PersonalInfoForm() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
+                    {renderError('staatsangehoerigkeit')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
@@ -655,6 +821,7 @@ export default function PersonalInfoForm() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
+                    {renderError('bewoerbene_position')}
                   </div>
                 </div>
               </div>
@@ -672,8 +839,9 @@ export default function PersonalInfoForm() {
                       name="iban"
                       value={formData.iban}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className={getInputClassName('iban')}
                     />
+                    {renderError('iban')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">

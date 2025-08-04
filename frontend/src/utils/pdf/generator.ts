@@ -269,6 +269,17 @@ export class PDFGenerator {
   }
 
   private drawRightColumn(formData: FormData): void {
+    console.log('Drawing right column with data:', {
+      agentur_meldung: formData.agentur_meldung,
+      agentur_ort: formData.agentur_ort,
+      weitere_beschaeftigungen: formData.weitere_beschaeftigungen,
+      beschaeftigungen_details: formData.beschaeftigungen_details,
+      arbeitgeber_adresse: formData.arbeitgeber_adresse,
+      kurzfristige_beschaeftigung: formData.kurzfristige_beschaeftigung,
+      kurzfristige_bis: formData.kurzfristige_bis,
+      notizen: formData.notizen
+    });
+    
     const rightMargin = 110;
     let yPos = 45;
 
@@ -330,6 +341,7 @@ export class PDFGenerator {
       if ((option === 'Nein' && formData.weitere_beschaeftigungen === 'nein') || 
           (option === 'Ja, ich übe folgende Beschäftigung/en aus:' && formData.weitere_beschaeftigungen === 'ja')) {
         this.pdf.setFont('helvetica', 'bold');
+        this.pdf.text('X', x + 0.3, yPos - 0.3);
         this.pdf.setFont('helvetica', 'normal');
       }
       this.pdf.text(option, x + 4, yPos);
@@ -407,11 +419,16 @@ export class PDFGenerator {
 
     // Notes
     yPos += 8; // Increased from 6 to 8
+    this.pdf.setFontSize(7);
+    this.pdf.setFont('helvetica', 'normal');
     this.pdf.text('Notizen:', rightMargin, yPos);
     this.pdf.rect(rightMargin, yPos + 2, 70, 15);
     if (formData.notizen) {
       this.pdf.setFontSize(5);
-      this.pdf.text(formData.notizen, rightMargin + 2, yPos + 4);
+      const wrappedNotes = this.pdf.splitTextToSize(formData.notizen, 66);
+      wrappedNotes.forEach((line: string, index: number) => {
+        this.pdf.text(line, rightMargin + 2, yPos + 4 + (index * 3));
+      });
     }
 
     // Declaration

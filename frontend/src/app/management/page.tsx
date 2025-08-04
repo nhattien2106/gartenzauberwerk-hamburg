@@ -56,7 +56,7 @@ export default function ManagementPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/index.php?path=users');
+      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=users');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

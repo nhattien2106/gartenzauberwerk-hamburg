@@ -34,8 +34,9 @@ function handleUserRegistration()
         geburt_am, in_ort, geschlecht, status, status_sonstiges, hoechster_abschluss, 
         bewoerbene_position, familienstand, unterhaltspflichtige_kinder, staatsangehoerigkeit, mobilitaet, iban, 
         bic, bank, renten_vers_nr, steuer_id, konfession, 
-        mitglied_kv, kv_nr
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        mitglied_kv, kv_nr, agentur_meldung, agentur_ort, weitere_beschaeftigungen, beschaeftigungen_details, 
+        arbeitgeber_adresse, kurzfristige_beschaeftigung, kurzfristige_bis, notizen
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try{
         $stmt = $pdo->prepare($sql);
@@ -76,7 +77,17 @@ function handleUserRegistration()
                 // Religious and insurance information
                 $data['konfession'] ?? '',      // Religious denomination from form
                 ($data['mitglied_kv'] === 'Ja' ? 1 : 0),     // Insurance membership status
-                $data['kv_nr'] ?? ''            // Insurance number from form
+                $data['kv_nr'] ?? '',           // Insurance number from form
+                
+                // Additional Information (Right Section)
+                $data['agentur_meldung'] ?? 'nein',     // Agency notification
+                $data['agentur_ort'] ?? '',             // Agency location
+                $data['weitere_beschaeftigungen'] ?? 'nein', // Additional employments
+                $data['beschaeftigungen_details'] ?? '', // Details of additional employments
+                $data['arbeitgeber_adresse'] ?? '',     // Employer address
+                $data['kurzfristige_beschaeftigung'] ?? 'nein', // Short-term employment
+                $data['kurzfristige_bis'] ?? '',        // Short-term employment until date
+                $data['notizen'] ?? ''                  // Notes
             ]
         );
         echo json_encode(['success' => 'User registered successfully']);
