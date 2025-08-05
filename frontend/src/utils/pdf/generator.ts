@@ -11,7 +11,7 @@ export interface FormData {
   in?: string;
   status: string;
   status_sonstiges?: string;
-  geschlecht: 'weiblich' | 'maennlich';
+  geschlecht: 'weiblich' | 'maennlich' | '';
   familienstand: string;
   unterhaltspflichtige_kinder?: string;
   hoechster_abschluss?: string;
@@ -28,14 +28,18 @@ export interface FormData {
   kv_nr?: string;
   
   // Additional Information
-  agentur_meldung?: 'nein' | 'ja';
+  agentur_meldung?: 'nein' | 'ja' | '';
   agentur_ort?: string;
-  weitere_beschaeftigungen?: 'nein' | 'ja';
+  weitere_beschaeftigungen?: 'nein' | 'ja' | '';
   beschaeftigungen_details?: string;
   arbeitgeber_adresse?: string;
-  kurzfristige_beschaeftigung?: 'nein' | 'ja';
+  kurzfristige_beschaeftigung?: 'nein' | 'ja' | '';
   kurzfristige_bis?: string;
   notizen?: string;
+  
+  // Declaration
+  erklarung_ort_datum?: string;
+  erklarung_unterschrift?: string;
 }
 
 export class PDFGenerator {
@@ -137,21 +141,33 @@ export class PDFGenerator {
     const statusOptions = ['Schüler/in', 'Auszubildende/r', 'Student/in', 'Angestellte/r', 'Arbeitssuchend', 'Rentner/in', 'Sonstiges'];
     const selectedStatus = formData.status;
 
-    // Only show the selected status option
-    const selectedStatusOption = statusOptions.find(status => status === selectedStatus);
-    if (selectedStatusOption) {
-      const x = 20;
-      const y = yPos;
+    // Show all status options with checkboxes in 2 columns, but only mark the selected one
+    statusOptions.forEach((option, index) => {
+      const column = index % 2; // 0 for left column, 1 for right column
+      const row = Math.floor(index / 2); // 0, 1, 2, 3 for rows
+      const x = 20 + (column * 45); // 45mm spacing between columns
+      const y = yPos + (row * 4); // 4mm spacing between rows
       
       this.pdf.rect(x, y - 2, 2, 2);
-      this.pdf.setFont('helvetica', 'bold');
-      this.pdf.text('X', x + 0.3, y - 0.3);
-      this.pdf.setFont('helvetica', 'normal');
-      this.pdf.text(selectedStatusOption, x + 4, y);
-    }
+      if (option === selectedStatus) {
+        this.pdf.setFont('helvetica', 'bold');
+        this.pdf.text('X', x + 0.3, y - 0.3);
+        this.pdf.setFont('helvetica', 'normal');
+      }
+      this.pdf.text(option, x + 4, y);
+      
+      // Add input line for "Sonstiges"
+      if (option === 'Sonstiges') {
+        this.pdf.line(x + 20, y + 1, x + 45, y + 1);
+        if (formData.status_sonstiges) {
+          this.pdf.setFontSize(6);
+          this.pdf.text(formData.status_sonstiges, x + 22, y - 0.5);
+        }
+      }
+    });
 
-    // Gender Section
-    yPos += 3; // Decreased from 8 to 3 (moved up by 5 points)
+    // Gender Section - moved down to accommodate 2-column Status layout
+    yPos += 16; // Increased from 8 to 16 to account for 2 rows of Status options
     this.pdf.setFontSize(7);
     this.pdf.setFont('helvetica', 'bold');
     this.pdf.text('Geschlecht:', 20, yPos);
@@ -160,21 +176,19 @@ export class PDFGenerator {
     this.pdf.setFontSize(6);
     this.pdf.setFont('helvetica', 'normal');
 
-    let selectedGender = '';
-    if (formData.geschlecht === 'weiblich') {
-      selectedGender = 'Weiblich';
-    } else if (formData.geschlecht === 'maennlich') {
-      selectedGender = 'Männlich';
-    }
-
-    if (selectedGender) {
-      const x = 20;
+    const genderOptions = ['Weiblich', 'Männlich'];
+    genderOptions.forEach((option, index) => {
+      const x = 20 + (index * 25); // Space them out horizontally
       this.pdf.rect(x, yPos - 2, 2, 2);
-      this.pdf.setFont('helvetica', 'bold');
-      this.pdf.text('X', x + 0.3, yPos - 0.3);
-      this.pdf.setFont('helvetica', 'normal');
-      this.pdf.text(selectedGender, x + 4, yPos);
-    }
+      // Only mark if explicitly selected (no default selection)
+      if ((option === 'Weiblich' && formData.geschlecht === 'weiblich') || 
+          (option === 'Männlich' && formData.geschlecht === 'maennlich')) {
+        this.pdf.setFont('helvetica', 'bold');
+        this.pdf.text('X', x + 0.3, yPos - 0.3);
+        this.pdf.setFont('helvetica', 'normal');
+      }
+      this.pdf.text(option, x + 4, yPos);
+    });
 
     return yPos;
   }
@@ -183,8 +197,8 @@ export class PDFGenerator {
     const leftMargin = 20;
     const lineHeight = 6; // Increased from 5 to 6
 
-    // Family Information - moved down by 15 points
-    yPos += 21; // Increased from 16 to 21 (added 5 more points)
+    // Family Information - moved down to accommodate Gender section spacing
+    yPos += 35; // Increased from 25 to 35 to provide more space after Gender section
     const familyFields = [
       { label: 'Familienstand:', value: formData.familienstand, width: 40 },
       { label: 'unterhaltspflichtige Kinder:', value: formData.unterhaltspflichtige_kinder || '', width: 15 },
@@ -307,19 +321,22 @@ export class PDFGenerator {
       this.pdf.text(option, x + 4, yPos);
     });
 
-    // Display agentur_ort if "Ja" is selected
+    // Display agentur_ort input line (always show)
+    yPos += 6; // Increased spacing for better positioning
+    this.pdf.setFontSize(6);
+    this.pdf.text('Ort:', rightMargin, yPos);
+    this.pdf.line(rightMargin + 8, yPos + 1, rightMargin + 78, yPos + 1);
+    
+    // Display text if "Ja" is selected
     if (formData.agentur_meldung === 'ja' && formData.agentur_ort) {
-      yPos += 6; // Increased spacing for better positioning
-      this.pdf.setFontSize(6);
-      this.pdf.text('Ort:', rightMargin, yPos);
-      this.pdf.line(rightMargin + 8, yPos + 1, rightMargin + 78, yPos + 1);
-      
       // Word wrap the text
       const wrappedText = this.pdf.splitTextToSize(formData.agentur_ort, 68); // 70 - 2 for margin
       wrappedText.forEach((line: string, index: number) => {
         this.pdf.text(line, rightMargin + 10, yPos - 1 + (index * 3));
       });
       yPos += Math.max(wrappedText.length * 3, 4); // Adjust position based on wrapped text
+    } else {
+      yPos += 4; // Space for empty line
     }
 
     // Additional Employment Question
@@ -347,34 +364,42 @@ export class PDFGenerator {
       this.pdf.text(option, x + 4, yPos);
     });
 
-    // Display beschaeftigungen_details if "Ja" is selected
+    // Display beschaeftigungen_details input line (always show)
+    yPos += 6; // Increased spacing for better positioning
+    this.pdf.setFontSize(6);
+    this.pdf.text('Details:', rightMargin, yPos);
+    this.pdf.line(rightMargin + 12, yPos + 1, rightMargin + 82, yPos + 1);
+    
+    // Display text if "Ja" is selected
     if (formData.weitere_beschaeftigungen === 'ja' && formData.beschaeftigungen_details) {
-      yPos += 6; // Increased spacing for better positioning
-      this.pdf.setFontSize(6);
-      this.pdf.text('Details:', rightMargin, yPos);
-      this.pdf.line(rightMargin + 12, yPos + 1, rightMargin + 82, yPos + 1);
-      
       // Word wrap the text
       const wrappedText = this.pdf.splitTextToSize(formData.beschaeftigungen_details, 68); // 70 - 2 for margin
       wrappedText.forEach((line: string, index: number) => {
         this.pdf.text(line, rightMargin + 14, yPos - 1 + (index * 3));
       });
       yPos += Math.max(wrappedText.length * 3, 4); // Adjust position based on wrapped text
+    } else {
+      yPos += 4; // Space for empty line
     }
 
-    // Display arbeitgeber_adresse if "Ja" is selected
-    if (formData.weitere_beschaeftigungen === 'ja' && formData.arbeitgeber_adresse) {
+    // Display arbeitgeber_adresse input line (always show)
+    if (formData.weitere_beschaeftigungen === 'ja') {
       yPos += 6; // Increased spacing for better positioning
       this.pdf.setFontSize(6);
       this.pdf.text('Arbeitgeber Adresse:', rightMargin, yPos);
       this.pdf.line(rightMargin + 25, yPos + 1, rightMargin + 95, yPos + 1);
       
-      // Word wrap the text
-      const wrappedText = this.pdf.splitTextToSize(formData.arbeitgeber_adresse, 68); // 70 - 2 for margin
-      wrappedText.forEach((line: string, index: number) => {
-        this.pdf.text(line, rightMargin + 27, yPos - 1 + (index * 3));
-      });
-      yPos += Math.max(wrappedText.length * 3, 4); // Adjust position based on wrapped text
+      // Display text if provided
+      if (formData.arbeitgeber_adresse) {
+        // Word wrap the text
+        const wrappedText = this.pdf.splitTextToSize(formData.arbeitgeber_adresse, 68); // 70 - 2 for margin
+        wrappedText.forEach((line: string, index: number) => {
+          this.pdf.text(line, rightMargin + 27, yPos - 1 + (index * 3));
+        });
+        yPos += Math.max(wrappedText.length * 3, 4); // Adjust position based on wrapped text
+      } else {
+        yPos += 4; // Space for empty line
+      }
     }
 
     // Short-term Employment Question
@@ -402,19 +427,22 @@ export class PDFGenerator {
       this.pdf.text(option, x + 4, yPos);
     });
 
-    // Display kurzfristige_bis if "Ja" is selected
+    // Display kurzfristige_bis input line (always show)
+    yPos += 6; // Increased spacing for better positioning
+    this.pdf.setFontSize(6);
+    this.pdf.text('Bis zum:', rightMargin, yPos);
+    this.pdf.line(rightMargin + 12, yPos + 1, rightMargin + 82, yPos + 1);
+    
+    // Display text if "Ja" is selected
     if (formData.kurzfristige_beschaeftigung === 'ja' && formData.kurzfristige_bis) {
-      yPos += 6; // Increased spacing for better positioning
-      this.pdf.setFontSize(6);
-      this.pdf.text('Bis zum:', rightMargin, yPos);
-      this.pdf.line(rightMargin + 12, yPos + 1, rightMargin + 82, yPos + 1);
-      
       // Word wrap the text
       const wrappedText = this.pdf.splitTextToSize(formData.kurzfristige_bis, 68); // 70 - 2 for margin
       wrappedText.forEach((line: string, index: number) => {
         this.pdf.text(line, rightMargin + 14, yPos - 1 + (index * 3));
       });
       yPos += Math.max(wrappedText.length * 3, 4); // Adjust position based on wrapped text
+    } else {
+      yPos += 4; // Space for empty line
     }
 
     // Notes
@@ -452,12 +480,33 @@ export class PDFGenerator {
     this.pdf.setFontSize(7);
     this.pdf.text('Ort, Datum:', rightMargin, yPos);
     this.pdf.line(rightMargin + 20, yPos + 1, rightMargin + 40, yPos + 1);
+    if (formData.erklarung_ort_datum) {
+      this.pdf.setFontSize(6);
+      this.pdf.text(formData.erklarung_ort_datum, rightMargin + 22, yPos - 0.5);
+    }
+    
+    this.pdf.setFontSize(7);
     this.pdf.text('Unterschrift:', rightMargin + 50, yPos);
     this.pdf.line(rightMargin + 65, yPos + 1, rightMargin + 85, yPos + 1);
+    if (formData.erklarung_unterschrift) {
+      // Check if it's a data URL (signature image)
+      if (formData.erklarung_unterschrift.startsWith('data:image')) {
+        try {
+          // Add signature image to PDF
+          this.pdf.addImage(formData.erklarung_unterschrift, 'PNG', rightMargin + 67, yPos - 8, 20, 8);
+        } catch (error) {
+          console.error('Error adding signature image to PDF:', error);
+        }
+      } else {
+        // Fallback to text if it's not an image
+        this.pdf.setFontSize(6);
+        this.pdf.text(formData.erklarung_unterschrift, rightMargin + 67, yPos - 0.5);
+      }
+    }
   }
 
   private drawEmployerSection(): void {
-    let yPos = 206; // Increased from 200 to 206 (moved down by 6 more points)
+    let yPos = 235; // Increased from 220 to 235 to provide more space after banking section
     
     this.pdf.setDrawColor(0, 0, 0);
     this.pdf.setLineWidth(0.2); // Reduced from 0.5 to 0.2 for thinner lines

@@ -47,6 +47,11 @@ case 'GET':
         getAllUsers();
     }
     break;
+case 'DELETE':
+    if ($path === 'delete-user') {
+        deleteUser();
+    }
+    break;
 default:
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);

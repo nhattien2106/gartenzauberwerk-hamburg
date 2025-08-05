@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { generateMitarbeiterstammdatenPDF, type FormData as PDFFormData } from '@/utils/pdf';
+import { getUsersApi, deleteUserApi } from '@/utils/api';
 import Navbar from '@/components/Navbar';
 
 interface User {
@@ -48,6 +49,7 @@ export default function ManagementPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [exportingPDF, setExportingPDF] = useState<number | null>(null);
+  const [deletingUser, setDeletingUser] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -56,12 +58,14 @@ export default function ManagementPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=users');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const result = await getUsersApi();
+      
+      if (result.success && result.data) {
+        setUsers(result.data);
+      } else {
+        console.error('Error fetching users:', result.error);
+        setError('Fehler beim Laden der Benutzerdaten');
       }
-      const data = await response.json();
-      setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
       setError('Fehler beim Laden der Benutzerdaten');
@@ -78,6 +82,31 @@ export default function ManagementPage() {
   const handleCloseDetails = () => {
     setShowDetails(false);
     setSelectedUser(null);
+  };
+
+  const handleDeleteUser = async (userId: number, userName: string) => {
+    if (!confirm(`Sind Sie sicher, dass Sie ${userName} löschen möchten?`)) {
+      return;
+    }
+
+    setDeletingUser(userId);
+    
+    try {
+      const result = await deleteUserApi(userId);
+      
+      if (result.success && result.data?.success) {
+        // Remove the user from the local state
+        setUsers(users.filter(user => user.id !== userId));
+        alert('Benutzer erfolgreich gelöscht');
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Fehler beim Löschen des Benutzers');
+    } finally {
+      setDeletingUser(null);
+    }
   };
 
   const exportUserPDF = async (user: User) => {
@@ -229,6 +258,15 @@ export default function ManagementPage() {
                             }`}
                           >
                             {exportingPDF === user.id ? '⏳ Exporting...' : '📄 PDF Export'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.id, user.vor_nachname)}
+                            disabled={deletingUser === user.id}
+                            className={`text-red-600 hover:text-red-900 transition-colors text-xs sm:text-sm ${
+                              deletingUser === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            {deletingUser === user.id ? '⏳ Löschen...' : '🗑️ Löschen'}
                           </button>
                         </div>
                       </td>

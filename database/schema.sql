@@ -52,6 +52,10 @@ CREATE TABLE users (
     kurzfristige_bis DATE, -- Short-term employment until date
     notizen TEXT, -- Notes
     
+    -- Declaration Fields
+    erklarung_ort_datum VARCHAR(255), -- Place and date of declaration
+    erklarung_unterschrift TEXT, -- Digital signature
+    
     -- System Fields
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { generateMitarbeiterstammdatenPDF, type FormData as PDFFormData } from '@/utils/pdf';
+import SignatureInput from './SignatureInput';
+import { careerOptionsApi, registerUserApi } from '@/utils/api';
 
 interface CareerOption {
   id: number;
@@ -19,7 +21,7 @@ interface FormData {
   in: string;
   status: string;
   status_sonstiges: string;
-  geschlecht: 'weiblich' | 'maennlich';
+  geschlecht: 'weiblich' | 'maennlich' | '';
   familienstand: string;
   unterhaltspflichtige_kinder: string;
   hoechster_abschluss: string;
@@ -36,17 +38,18 @@ interface FormData {
   kv_nr: string;
   
   // Additional Information
-  agentur_meldung: 'nein' | 'ja';
+  agentur_meldung: 'nein' | 'ja' | '';
   agentur_ort: string;
-  weitere_beschaeftigungen: 'nein' | 'ja';
+  weitere_beschaeftigungen: 'nein' | 'ja' | '';
   beschaeftigungen_details: string;
   arbeitgeber_adresse: string;
-  kurzfristige_beschaeftigung: 'nein' | 'ja';
+  kurzfristige_beschaeftigung: 'nein' | 'ja' | '';
   kurzfristige_bis: string;
   notizen: string;
   
   // Declaration
-  erklarung_datum: string;
+  erklarung_ort_datum: string;
+  erklarung_unterschrift: string;
 }
 
 interface ValidationErrors {
@@ -69,7 +72,7 @@ export default function PersonalInfoForm() {
     in: '',
     status: '',
     status_sonstiges: '',
-    geschlecht: 'maennlich',
+    geschlecht: '', // Changed from 'maennlich' to blank
     familienstand: '',
     unterhaltspflichtige_kinder: '',
     hoechster_abschluss: '',
@@ -82,17 +85,18 @@ export default function PersonalInfoForm() {
     renten_vers_nr: '',
     steuer_id: '',
     konfession: '',
-    mitglied_kv: '',
+    mitglied_kv: '', // Changed from '' to blank
     kv_nr: '',
-    agentur_meldung: 'nein',
+    agentur_meldung: '', // Changed from 'nein' to blank
     agentur_ort: '',
-    weitere_beschaeftigungen: 'nein',
+    weitere_beschaeftigungen: '', // Changed from 'nein' to blank
     beschaeftigungen_details: '',
     arbeitgeber_adresse: '',
-    kurzfristige_beschaeftigung: 'nein',
+    kurzfristige_beschaeftigung: '', // Changed from 'nein' to blank
     kurzfristige_bis: '',
     notizen: '',
-    erklarung_datum: ''
+    erklarung_ort_datum: '',
+    erklarung_unterschrift: ''
   });
 
   // Load career options on component mount
@@ -101,12 +105,12 @@ export default function PersonalInfoForm() {
   }, []);
 
   const fetchCareerOptions = async () => {
-    try {
-      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=career-options');
-      const data = await response.json();
-      setCareerOptions(data);
-    } catch (error) {
-      console.error('Error fetching career options:', error);
+    const result = await careerOptionsApi();
+    
+    if (result.success && result.data) {
+      setCareerOptions(result.data);
+    } else {
+      console.error('Error fetching career options:', result.error);
       // Fallback to mock data when backend is not available
       const mockOptions = [
         { id: 1, status_name: 'Schüler/in' },
@@ -174,6 +178,10 @@ export default function PersonalInfoForm() {
         return validateRequired(value, 'Staatsangehörigkeit');
       case 'bewoerbene_position':
         return validateRequired(value, 'Beworbene Position');
+      case 'erklarung_ort_datum':
+        return validateRequired(value, 'Ort, Datum');
+      case 'erklarung_unterschrift':
+        return validateRequired(value, 'Unterschrift');
       default:
         return null;
     }
@@ -236,7 +244,8 @@ export default function PersonalInfoForm() {
     // Validate all required fields
     const requiredFields = [
       'vor_nachname', 'anschrift', 'mobil', 'email', 'geburt_am', 'in',
-      'status', 'geschlecht', 'familienstand', 'staatsangehoerigkeit', 'bewoerbene_position', 'iban'
+      'status', 'geschlecht', 'familienstand', 'staatsangehoerigkeit', 'bewoerbene_position', 'iban',
+      'erklarung_ort_datum', 'erklarung_unterschrift'
     ];
     
     requiredFields.forEach(field => {
@@ -265,25 +274,13 @@ export default function PersonalInfoForm() {
     setLoading(true);
     setMessage(null);
 
-    try {
-      const response = await fetch('http://3.120.238.208:8000/api/index.php?path=register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Formular erfolgreich eingereicht!' });
-        setShowReview(false);
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Einreichung fehlgeschlagen' });
-      }
-    } catch (error) {
-      console.error('Backend not available, using local storage:', error);
+    const result = await registerUserApi(formData);
+    
+    if (result.success) {
+      setMessage({ type: 'success', text: 'Formular erfolgreich eingereicht!' });
+      setShowReview(false);
+    } else {
+      console.error('Backend not available, using local storage:', result.error);
       // Store data locally when backend is not available
       const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
       submissions.push({
@@ -295,9 +292,9 @@ export default function PersonalInfoForm() {
       
       setMessage({ type: 'success', text: 'Formular erfolgreich gespeichert (lokaler Speicher)!' });
       setShowReview(false);
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   const exportToPDF = async () => {
@@ -511,11 +508,11 @@ export default function PersonalInfoForm() {
                 <div className="flex items-center justify-between space-x-4 mt-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-black">Ort, Datum:</span>
-                    <div className="border-b-2 border-gray-400 w-32 h-4"></div>
+                    <span className="text-sm text-black">{formData.erklarung_ort_datum || 'Nicht angegeben'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-black">Unterschrift:</span>
-                    <div className="border-b-2 border-gray-400 w-32 h-4"></div>
+                    <span className="text-sm text-black">{formData.erklarung_unterschrift ? 'Unterschrieben' : 'Nicht unterschrieben'}</span>
                   </div>
                 </div>
               </div>
@@ -566,6 +563,11 @@ export default function PersonalInfoForm() {
         <ReviewPage />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+            <p className="text-sm text-blue-800">
+              <span className="font-semibold">Hinweis:</span> Felder mit einem Stern (*) sind Pflichtfelder und müssen ausgefüllt werden.
+            </p>
+          </div>
         <div id="form-content" className="space-y-4 sm:space-y-6">
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
@@ -664,7 +666,7 @@ export default function PersonalInfoForm() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-black mb-1">
-                        In *
+                        Geburt Ort *
                       </label>
                       <input
                         type="text"
@@ -682,7 +684,7 @@ export default function PersonalInfoForm() {
 
               {/* Status Section */}
               <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Status</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Status *</h3>
                 <div className="space-y-2 sm:space-y-3">
                   {careerOptions.map(option => (
                     <div key={option.id} className="flex items-center">
@@ -711,12 +713,13 @@ export default function PersonalInfoForm() {
                       />
                     </div>
                   )}
+                  {renderError('status')}
                 </div>
               </div>
 
               {/* Gender Section */}
               <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Geschlecht</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Geschlecht *</h3>
                 <div className="space-y-2 sm:space-y-3">
                   <div className="flex items-center">
                     <input
@@ -740,6 +743,7 @@ export default function PersonalInfoForm() {
                     />
                     <label className="ml-2 block text-sm text-black">Männlich</label>
                   </div>
+                  {renderError('geschlecht')}
                 </div>
               </div>
 
@@ -749,28 +753,47 @@ export default function PersonalInfoForm() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
-                      Familienstand
+                      Familienstand *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="familienstand"
                       value={formData.familienstand}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
+                      required
+                      className={getInputClassName('familienstand')}
+                    >
+                      <option value="">Bitte wählen Sie...</option>
+                      <option value="ledig">Ledig</option>
+                      <option value="verheiratet">Verheiratet</option>
+                      <option value="geschieden">Geschieden</option>
+                      <option value="verwitwet">Verwitwet</option>
+                      <option value="partnerschaft">Partnerschaft</option>
+                    </select>
                     {renderError('familienstand')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
                       unterhaltspflichtige Kinder
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="unterhaltspflichtige_kinder"
                       value={formData.unterhaltspflichtige_kinder}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
+                    >
+                      <option value="">Bitte wählen Sie...</option>
+                      <option value="0">0</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                      <option value="7">7</option>
+                      <option value="8">8</option>
+                      <option value="9">9</option>
+                      <option value="10">10</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
@@ -787,15 +810,16 @@ export default function PersonalInfoForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
-                      Staatsangehörigkeit
+                      Staatsangehörigkeit *
                     </label>
-                    <input
-                      type="text"
-                      name="staatsangehoerigkeit"
-                      value={formData.staatsangehoerigkeit}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
+                                          <input
+                        type="text"
+                        name="staatsangehoerigkeit"
+                        value={formData.staatsangehoerigkeit}
+                        onChange={handleInputChange}
+                        required
+                        className={getInputClassName('staatsangehoerigkeit')}
+                      />
                     {renderError('staatsangehoerigkeit')}
                   </div>
                   <div>
@@ -812,15 +836,16 @@ export default function PersonalInfoForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
-                      Beworbene Position
+                      Beworbene Position *
                     </label>
-                    <input
-                      type="text"
-                      name="bewoerbene_position"
-                      value={formData.bewoerbene_position}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
+                                          <input
+                        type="text"
+                        name="bewoerbene_position"
+                        value={formData.bewoerbene_position}
+                        onChange={handleInputChange}
+                        required
+                        className={getInputClassName('bewoerbene_position')}
+                      />
                     {renderError('bewoerbene_position')}
                   </div>
                 </div>
@@ -832,15 +857,16 @@ export default function PersonalInfoForm() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
-                      IBAN
+                      IBAN *
                     </label>
-                    <input
-                      type="text"
-                      name="iban"
-                      value={formData.iban}
-                      onChange={handleInputChange}
-                      className={getInputClassName('iban')}
-                    />
+                                          <input
+                        type="text"
+                        name="iban"
+                        value={formData.iban}
+                        onChange={handleInputChange}
+                        required
+                        className={getInputClassName('iban')}
+                      />
                     {renderError('iban')}
                   </div>
                   <div>
@@ -1097,13 +1123,33 @@ export default function PersonalInfoForm() {
                   Ich versichere, dass die auf diesem Dokument gemachten Angaben der Wahrheit entsprechen und ich verpflichte mich, den Arbeitgeber über alle Änderungen unverzüglich zu informieren.
                 </p>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-black">Ort, Datum:</span>
-                    <div className="border-b-2 border-gray-400 w-24 sm:w-32 h-4"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-black">Ort, Datum:</span>
+                      <div className="flex-1 border-b-2 border-gray-400">
+                        <input
+                          type="text"
+                          name="erklarung_ort_datum"
+                          value={formData.erklarung_ort_datum}
+                          onChange={handleInputChange}
+                          placeholder="Hamburg, 15.12.2024"
+                          className="w-full px-2 py-1 border-none outline-none bg-transparent text-black placeholder-gray-500 text-sm"
+                        />
+                        {renderError('erklarung_ort_datum')}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-black">Unterschrift:</span>
-                    <div className="border-b-2 border-gray-400 w-24 sm:w-32 h-4"></div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-black mb-2">
+                      Unterschrift:
+                    </label>
+                    <SignatureInput
+                      value={formData.erklarung_unterschrift}
+                      onChange={(value) => setFormData(prev => ({ ...prev, erklarung_unterschrift: value }))}
+                      placeholder="Unterschrift hier zeichnen"
+                      className="w-full"
+                    />
+                    {renderError('erklarung_unterschrift')}
                   </div>
                 </div>
               </div>

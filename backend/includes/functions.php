@@ -35,8 +35,8 @@ function handleUserRegistration()
         bewoerbene_position, familienstand, unterhaltspflichtige_kinder, staatsangehoerigkeit, mobilitaet, iban, 
         bic, bank, renten_vers_nr, steuer_id, konfession, 
         mitglied_kv, kv_nr, agentur_meldung, agentur_ort, weitere_beschaeftigungen, beschaeftigungen_details, 
-        arbeitgeber_adresse, kurzfristige_beschaeftigung, kurzfristige_bis, notizen
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        arbeitgeber_adresse, kurzfristige_beschaeftigung, kurzfristige_bis, notizen, erklarung_ort_datum, erklarung_unterschrift
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try{
         $stmt = $pdo->prepare($sql);
@@ -44,11 +44,11 @@ function handleUserRegistration()
             [
                 $data['vor_nachname'],    // First & Last name from form
                 $data['anschrift'],       // Address from form
-                $data['telefon'],         // Landline phone from form
+                $data['telefon'] ?? '',   // Landline phone from form
                 $data['mobil'],           // Mobile phone from form
                 $data['email'],           // Email address from form
                 $data['geburt_am'],       // Date of birth from form
-                $data['in'],              // Place of birth from form
+                $data['in'] ?? $data['in_ort'] ?? '', // Place of birth from form
                 $data['geschlecht'],      // Gender from form
                 
                 // Career information
@@ -86,8 +86,10 @@ function handleUserRegistration()
                 $data['beschaeftigungen_details'] ?? '', // Details of additional employments
                 $data['arbeitgeber_adresse'] ?? '',     // Employer address
                 $data['kurzfristige_beschaeftigung'] ?? 'nein', // Short-term employment
-                $data['kurzfristige_bis'] ?? '',        // Short-term employment until date
-                $data['notizen'] ?? ''                  // Notes
+                (isset($data['kurzfristige_bis']) && $data['kurzfristige_bis'] && $data['kurzfristige_bis'] !== '') ? $data['kurzfristige_bis'] : null, // Short-term employment until date
+                $data['notizen'] ?? '',                 // Notes
+                $data['erklarung_ort_datum'] ?? '',     // Declaration place and date
+                $data['erklarung_unterschrift'] ?? ''   // Digital signature
             ]
         );
         echo json_encode(['success' => 'User registered successfully']);
@@ -203,6 +205,42 @@ function validateTaxID($steuerId)
     }
 
     return true;
+}
 
+/**
+ * Deletes a user from the database
+ * 
+ * This function deletes a user record from the database based on the provided
+ * user ID. It is used for the management page to remove submitted forms.
+ * 
+ * @return void
+ */
+function deleteUser()
+{
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($input['id']) || !is_numeric($input['id'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid user ID provided']);
+            return;
+        }
+        
+        $pdo = getDBconnectDB();
+        $sql = "DELETE FROM users WHERE id = ?";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$input['id']]);
+        
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(['success' => 'User deleted successfully']);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'User not found']);
+        }
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
 }
 ?>
