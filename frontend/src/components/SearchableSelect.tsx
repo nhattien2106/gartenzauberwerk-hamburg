@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { countries } from 'countries-list';
 
 interface Country {
@@ -22,30 +22,21 @@ export default function SearchableSelect({
   value, 
   onChange, 
   placeholder = "Search...", 
-  className = "",
+  className = "", 
   label,
   required = false,
-  error
+  error 
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCountries, setFilteredCountries] = useState<Country[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Convert countries data to array and sort by name
+  // Convert countries object to array
   const countriesList: Country[] = Object.entries(countries).map(([code, country]) => ({
-    name: country.name,
-    code: code
-  })).sort((a, b) => a.name.localeCompare(b.name));
-
-  useEffect(() => {
-    // Filter countries based on search term
-    const filtered = countriesList.filter(country =>
-      country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      country.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCountries(filtered.slice(0, 50)); // Limit to 50 results for performance
-  }, [searchTerm]);
+    code,
+    name: country.name
+  }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,70 +49,65 @@ export default function SearchableSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const filtered = countriesList.filter(country => 
+      country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      country.code.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredCountries(filtered.slice(0, 50)); // Limit results
+  }, [searchTerm]);
+
   const handleSelect = (country: Country) => {
     onChange(country.name);
     setSearchTerm('');
     setIsOpen(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setIsOpen(true);
-  };
-
-  const handleInputClick = () => {
-    setIsOpen(true);
-    setSearchTerm('');
-  };
-
-  const getInputClassName = () => {
-    const baseClass = "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 text-black";
-    if (error) {
-      return `${baseClass} border-red-500 focus:ring-red-500`;
-    }
-    return `${baseClass} border-gray-300 focus:ring-blue-500`;
-  };
+  const selectedCountry = countriesList.find(country => country.name === value);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
         <label className="block text-sm font-medium text-black mb-1">
           {label}
         </label>
       )}
-      
-      <div ref={dropdownRef} className="relative">
+      <div className="relative">
         <input
           type="text"
-          value={isOpen ? searchTerm : value}
-          onChange={handleInputChange}
-          onClick={handleInputClick}
+          value={isOpen ? searchTerm : (selectedCountry?.name || value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className={getInputClassName()}
-          required={required}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
         />
-        
-        {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {filteredCountries.length > 0 ? (
-              filteredCountries.map((country) => (
-                <div
-                  key={country.code}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm text-black"
-                  onClick={() => handleSelect(country)}
-                >
-                  {country.name}
-                </div>
-              ))
-            ) : (
-              <div className="px-3 py-2 text-gray-500 text-sm">
-                No countries found
-              </div>
-            )}
-          </div>
-        )}
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
       
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+          {filteredCountries.length > 0 ? (
+            filteredCountries.map((country) => (
+              <div
+                key={country.code}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm text-black"
+                onClick={() => handleSelect(country)}
+              >
+                {country.name}
+              </div>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-gray-500 text-sm">No countries found</div>
+          )}
+        </div>
+      )}
       {error && (
         <div className="text-red-500 text-xs mt-1">{error}</div>
       )}

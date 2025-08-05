@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { generateMitarbeiterstammdatenPDF, type FormData as PDFFormData } from '@/utils/pdf';
 import SignatureInput from './SignatureInput';
+import SearchableSelect from './SearchableSelect';
 import { careerOptionsApi, registerUserApi } from '@/utils/api';
 
 interface CareerOption {
@@ -665,18 +666,14 @@ export default function PersonalInfoForm() {
                       {renderError('geburt_am')}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-black mb-1">
-                        Geburt Ort *
-                      </label>
-                      <input
-                        type="text"
-                        name="in"
+                      <SearchableSelect
                         value={formData.in}
-                        onChange={handleInputChange}
+                        onChange={(value) => setFormData(prev => ({ ...prev, in: value }))}
+                        label="Geburt Ort *"
+                        placeholder="Land auswählen..."
                         required
-                        className={getInputClassName('in')}
+                        error={validationErrors['in']}
                       />
-                      {renderError('in')}
                     </div>
                   </div>
                 </div>
@@ -809,18 +806,14 @@ export default function PersonalInfoForm() {
                     {renderError('hoechster_abschluss')}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Staatsangehörigkeit *
-                    </label>
-                                          <input
-                        type="text"
-                        name="staatsangehoerigkeit"
-                        value={formData.staatsangehoerigkeit}
-                        onChange={handleInputChange}
-                        required
-                        className={getInputClassName('staatsangehoerigkeit')}
-                      />
-                    {renderError('staatsangehoerigkeit')}
+                    <SearchableSelect
+                      value={formData.staatsangehoerigkeit}
+                      onChange={(value) => setFormData(prev => ({ ...prev, staatsangehoerigkeit: value }))}
+                      label="Staatsangehörigkeit *"
+                      placeholder="Land auswählen..."
+                      required
+                      error={validationErrors['staatsangehoerigkeit']}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
