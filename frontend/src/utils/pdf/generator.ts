@@ -13,7 +13,7 @@ export interface FormData {
   status_sonstiges?: string;
   geschlecht: 'weiblich' | 'maennlich' | '';
   familienstand: string;
-  unterhaltspflichtige_kinder?: string;
+  unterhaltspflichtige_kinder?: number;
   hoechster_abschluss?: string;
   staatsangehoerigkeit?: string;
   mobilitaet?: string;
@@ -24,7 +24,7 @@ export interface FormData {
   renten_vers_nr?: string;
   steuer_id?: string;
   konfession?: string;
-  mitglied_kv?: string | boolean;
+  mitglied_kv?: string;
   kv_nr?: string;
   
   // Additional Information

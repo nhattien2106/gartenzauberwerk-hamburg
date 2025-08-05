@@ -18,7 +18,7 @@ interface User {
   status_sonstiges?: string;
   geschlecht: string;
   familienstand: string;
-  unterhaltspflichtige_kinder?: string;
+  unterhaltspflichtige_kinder?: number;
   hoechster_abschluss?: string;
   staatsangehoerigkeit?: string;
   mobilitaet?: string;
@@ -29,7 +29,7 @@ interface User {
   renten_vers_nr?: string;
   steuer_id?: string;
   konfession?: string;
-  mitglied_kv?: boolean;
+  mitglied_kv?: string;
   kv_nr?: string;
   agentur_meldung?: string;
   agentur_ort?: string;
@@ -117,11 +117,12 @@ export default function ManagementPage() {
       const pdfFormData: PDFFormData = {
         ...user,
         in: user.in_ort || '', // Map in_ort to in
-        mitglied_kv: user.mitglied_kv || false,
+        mitglied_kv: user.mitglied_kv || '',
         geschlecht: (user.geschlecht as 'weiblich' | 'maennlich') || 'maennlich',
         agentur_meldung: (user.agentur_meldung as 'nein' | 'ja') || 'nein',
         weitere_beschaeftigungen: (user.weitere_beschaeftigungen as 'nein' | 'ja') || 'nein',
-        kurzfristige_beschaeftigung: (user.kurzfristige_beschaeftigung as 'nein' | 'ja') || 'nein'
+        kurzfristige_beschaeftigung: (user.kurzfristige_beschaeftigung as 'nein' | 'ja') || 'nein',
+        unterhaltspflichtige_kinder: user.unterhaltspflichtige_kinder ? Number(user.unterhaltspflichtige_kinder) : 0
       };
       
       await generateMitarbeiterstammdatenPDF(pdfFormData);
@@ -338,7 +339,7 @@ export default function ManagementPage() {
                     <div><strong className="text-gray-900">Steuer-ID:</strong> <span className="text-gray-700">{selectedUser.steuer_id || '-'}</span></div>
                     <div><strong className="text-gray-900">Konfession:</strong> <span className="text-gray-700">{selectedUser.konfession || '-'}</span></div>
                     <div><strong className="text-gray-900">KV-Nr.:</strong> <span className="text-gray-700">{selectedUser.kv_nr || '-'}</span></div>
-                    <div><strong className="text-gray-900">Mitglied in gesetzl. KV:</strong> <span className="text-gray-700">{selectedUser.mitglied_kv ? 'Ja' : 'Nein'}</span></div>
+                                            <div><strong className="text-gray-900">Mitglied in gesetzl. KV:</strong> <span className="text-gray-700">{selectedUser.mitglied_kv || 'Nicht angegeben'}</span></div>
                   </div>
                 </div>
 

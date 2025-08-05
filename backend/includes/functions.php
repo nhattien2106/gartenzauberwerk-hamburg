@@ -59,7 +59,7 @@ function handleUserRegistration()
                 
                 // Family information
                 $data['familienstand'],   // Marital status from form
-                $data['unterhaltspflichtige_kinder'], // Number of children from form
+                (int)($data['unterhaltspflichtige_kinder'] ?? 0), // Number of children from form (convert to int)
                 
                 // Nationality and mobility
                 $data['staatsangehoerigkeit'], // Nationality from form
@@ -76,7 +76,7 @@ function handleUserRegistration()
                 
                 // Religious and insurance information
                 $data['konfession'] ?? '',      // Religious denomination from form
-                ($data['mitglied_kv'] === 'Ja' ? 1 : 0),     // Insurance membership status
+                $data['mitglied_kv'] ?? '',     // Insurance membership status (text input)
                 $data['kv_nr'] ?? '',           // Insurance number from form
                 
                 // Additional Information (Right Section)
@@ -139,7 +139,7 @@ function getAllUsers()
 {
     try {
         $pdo = getDBconnectDB();
-        $sql = "SELECT id, vor_nachname, anschrift, telefon, mobil, email, geburt_am, in_ort, status, status_sonstiges, geschlecht, familienstand, unterhaltspflichtige_kinder, hoechster_abschluss, staatsangehoerigkeit, mobilitaet, bewoerbene_position, iban, bic, bank, renten_vers_nr, steuer_id, konfession, mitglied_kv, kv_nr, agentur_meldung, agentur_ort, weitere_beschaeftigungen, beschaeftigungen_details, arbeitgeber_adresse, kurzfristige_beschaeftigung, kurzfristige_bis, notizen, created_at FROM users ORDER BY created_at DESC";
+        $sql = "SELECT id, vor_nachname, anschrift, telefon, mobil, email, geburt_am, in_ort, status, status_sonstiges, geschlecht, familienstand, unterhaltspflichtige_kinder, hoechster_abschluss, staatsangehoerigkeit, mobilitaet, bewoerbene_position, iban, bic, bank, renten_vers_nr, steuer_id, konfession, mitglied_kv, kv_nr, agentur_meldung, agentur_ort, weitere_beschaeftigungen, beschaeftigungen_details, arbeitgeber_adresse, kurzfristige_beschaeftigung, kurzfristige_bis, notizen, erklarung_ort_datum, erklarung_unterschrift, created_at FROM users ORDER BY created_at DESC";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
