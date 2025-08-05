@@ -573,225 +573,240 @@ export default function PersonalInfoForm() {
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             
-            {/* Left Column - Personal Data */}
+            {/* Left Column: Personal Data, Status, Gender */}
             <div className="space-y-4 sm:space-y-6">
               <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-black border-b border-gray-300 pb-2">
-                  Persönliche Daten
-                </h2>
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-6">
+                  {/* Persönliche Daten Section */}
                   <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Vor & Nachname *
-                    </label>
-                    <input
-                      type="text"
-                      name="vor_nachname"
-                      value={formData.vor_nachname}
-                      onChange={handleInputChange}
-                      required
-                      className={getInputClassName('vor_nachname')}
-                    />
-                    {renderError('vor_nachname')}
+                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black border-b border-gray-300 pb-2">
+                      Persönliche Daten
+                    </h3>
+                    <div className="space-y-3 sm:space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          Vor & Nachname *
+                        </label>
+                        <input
+                          type="text"
+                          name="vor_nachname"
+                          value={formData.vor_nachname}
+                          onChange={handleInputChange}
+                          required
+                          className={getInputClassName('vor_nachname')}
+                        />
+                        {renderError('vor_nachname')}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          Anschrift *
+                        </label>
+                        <textarea
+                          name="anschrift"
+                          value={formData.anschrift}
+                          onChange={handleInputChange}
+                          required
+                          rows={3}
+                          className={getInputClassName('anschrift')}
+                        />
+                        {renderError('anschrift')}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-1">
+                            Telefon
+                          </label>
+                          <input
+                            type="tel"
+                            name="telefon"
+                            value={formData.telefon}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-1">
+                            Mobil *
+                          </label>
+                          <input
+                            type="tel"
+                            name="mobil"
+                            value={formData.mobil}
+                            onChange={handleInputChange}
+                            required
+                            className={getInputClassName('mobil')}
+                          />
+                          {renderError('mobil')}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          E-Mail *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          className={getInputClassName('email')}
+                        />
+                        {renderError('email')}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-1">
+                            Geburt am *
+                          </label>
+                          <input
+                            type="date"
+                            name="geburt_am"
+                            value={formData.geburt_am}
+                            onChange={handleInputChange}
+                            required
+                            className={getInputClassName('geburt_am')}
+                          />
+                          {renderError('geburt_am')}
+                        </div>
+                        <div>
+                          <SearchableSelect
+                            value={formData.in}
+                            onChange={(value) => setFormData(prev => ({ ...prev, in: value }))}
+                            label="Geburt Ort *"
+                            placeholder="Land auswählen..."
+                            required
+                            error={validationErrors['in']}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Status Section */}
                   <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Anschrift *
-                    </label>
-                    <textarea
-                      name="anschrift"
-                      value={formData.anschrift}
-                      onChange={handleInputChange}
-                      required
-                      rows={3}
-                      className={getInputClassName('anschrift')}
-                    />
-                    {renderError('anschrift')}
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-1">
-                        Telefon
-                      </label>
-                      <input
-                        type="tel"
-                        name="telefon"
-                        value={formData.telefon}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-1">
-                        Mobil *
-                      </label>
-                      <input
-                        type="tel"
-                        name="mobil"
-                        value={formData.mobil}
-                        onChange={handleInputChange}
-                        required
-                        className={getInputClassName('mobil')}
-                      />
-                      {renderError('mobil')}
+                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Status *</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                      {careerOptions.map(option => (
+                        <div key={option.id} className="flex items-center">
+                          <input
+                            type="radio"
+                            name="status"
+                            value={option.status_name}
+                            checked={formData.status === option.status_name}
+                            onChange={handleInputChange}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <label className="ml-2 block text-sm text-black">
+                            {option.status_name}
+                          </label>
+                        </div>
+                      ))}
+                      {formData.status === 'Sonstiges' && (
+                        <div className="col-span-1 sm:col-span-2 ml-6">
+                          <input
+                            type="text"
+                            name="status_sonstiges"
+                            value={formData.status_sonstiges}
+                            onChange={handleInputChange}
+                            placeholder="Sonstiges"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                          />
+                        </div>
+                      )}
+                      {renderError('status')}
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      E-Mail *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className={getInputClassName('email')}
-                    />
-                    {renderError('email')}
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-1">
-                        Geburt am *
-                      </label>
-                      <input
-                        type="date"
-                        name="geburt_am"
-                        value={formData.geburt_am}
-                        onChange={handleInputChange}
-                        required
-                        className={getInputClassName('geburt_am')}
-                      />
-                      {renderError('geburt_am')}
-                    </div>
-                    <div>
-                      <SearchableSelect
-                        value={formData.in}
-                        onChange={(value) => setFormData(prev => ({ ...prev, in: value }))}
-                        label="Geburt Ort *"
-                        placeholder="Land auswählen..."
-                        required
-                        error={validationErrors['in']}
-                      />
-                    </div>
-                  </div>
+
+                                     {/* Gender Section */}
+                   <div>
+                     <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Geschlecht *</h3>
+                     <div className="space-y-2 sm:space-y-3">
+                       <div className="flex items-center">
+                         <input
+                           type="radio"
+                           name="geschlecht"
+                           value="weiblich"
+                           checked={formData.geschlecht === 'weiblich'}
+                           onChange={handleInputChange}
+                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                         />
+                         <label className="ml-2 block text-sm text-black">Weiblich</label>
+                       </div>
+                       <div className="flex items-center">
+                         <input
+                           type="radio"
+                           name="geschlecht"
+                           value="maennlich"
+                           checked={formData.geschlecht === 'maennlich'}
+                           onChange={handleInputChange}
+                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                         />
+                         <label className="ml-2 block text-sm text-black">Männlich</label>
+                       </div>
+                       {renderError('geschlecht')}
+                     </div>
+                   </div>
+
+                   {/* Family Information Section */}
+                   <div>
+                     <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Familieninformation</h3>
+                     <div className="space-y-3 sm:space-y-4">
+                       <div>
+                         <label className="block text-sm font-medium text-black mb-1">
+                           Familienstand *
+                         </label>
+                         <select
+                           name="familienstand"
+                           value={formData.familienstand}
+                           onChange={handleInputChange}
+                           required
+                           className={getInputClassName('familienstand')}
+                         >
+                           <option value="">Bitte wählen Sie...</option>
+                           <option value="ledig">Ledig</option>
+                           <option value="verheiratet">Verheiratet</option>
+                           <option value="geschieden">Geschieden</option>
+                           <option value="verwitwet">Verwitwet</option>
+                           <option value="partnerschaft">Partnerschaft</option>
+                         </select>
+                         {renderError('familienstand')}
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-black mb-1">
+                           unterhaltspflichtige Kinder
+                         </label>
+                         <select
+                           name="unterhaltspflichtige_kinder"
+                           value={formData.unterhaltspflichtige_kinder}
+                           onChange={handleInputChange}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                         >
+                           <option value="">Bitte wählen Sie...</option>
+                           <option value="0">0</option>
+                           <option value="1">1</option>
+                           <option value="2">2</option>
+                           <option value="3">3</option>
+                           <option value="4">4</option>
+                           <option value="5">5</option>
+                           <option value="6">6</option>
+                           <option value="7">7</option>
+                           <option value="8">8</option>
+                           <option value="9">9</option>
+                           <option value="10">10</option>
+                         </select>
+                       </div>
+                     </div>
+                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Status Section */}
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Status *</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  {careerOptions.map(option => (
-                    <div key={option.id} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="status"
-                        value={option.status_name}
-                        checked={formData.status === option.status_name}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label className="ml-2 block text-sm text-black">
-                        {option.status_name}
-                      </label>
-                    </div>
-                  ))}
-                  {formData.status === 'Sonstiges' && (
-                    <div className="ml-6">
-                      <input
-                        type="text"
-                        name="status_sonstiges"
-                        value={formData.status_sonstiges}
-                        onChange={handleInputChange}
-                        placeholder="Sonstiges"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                      />
-                    </div>
-                  )}
-                  {renderError('status')}
-                </div>
-              </div>
-
-              {/* Gender Section */}
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Geschlecht *</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      name="geschlecht"
-                      value="weiblich"
-                      checked={formData.geschlecht === 'weiblich'}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label className="ml-2 block text-sm text-black">Weiblich</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      name="geschlecht"
-                      value="maennlich"
-                      checked={formData.geschlecht === 'maennlich'}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label className="ml-2 block text-sm text-black">Männlich</label>
-                  </div>
-                  {renderError('geschlecht')}
-                </div>
-              </div>
-
-              {/* Additional Personal Data */}
+            {/* Right Column: Weitere Angaben, Bankdaten, Deutsche Angaben */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Weitere Angaben */}
               <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
                 <h3 className="text-lg font-semibold mb-4 text-black">Weitere Angaben</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Familienstand *
-                    </label>
-                    <select
-                      name="familienstand"
-                      value={formData.familienstand}
-                      onChange={handleInputChange}
-                      required
-                      className={getInputClassName('familienstand')}
-                    >
-                      <option value="">Bitte wählen Sie...</option>
-                      <option value="ledig">Ledig</option>
-                      <option value="verheiratet">Verheiratet</option>
-                      <option value="geschieden">Geschieden</option>
-                      <option value="verwitwet">Verwitwet</option>
-                      <option value="partnerschaft">Partnerschaft</option>
-                    </select>
-                    {renderError('familienstand')}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      unterhaltspflichtige Kinder
-                    </label>
-                    <select
-                      name="unterhaltspflichtige_kinder"
-                      value={formData.unterhaltspflichtige_kinder}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    >
-                      <option value="">Bitte wählen Sie...</option>
-                      <option value="0">0</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                      <option value="9">9</option>
-                      <option value="10">10</option>
-                    </select>
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
                       Höchster Abschluss
@@ -831,35 +846,28 @@ export default function PersonalInfoForm() {
                     <label className="block text-sm font-medium text-black mb-1">
                       Beworbene Position *
                     </label>
-                                          <input
-                        type="text"
-                        name="bewoerbene_position"
-                        value={formData.bewoerbene_position}
-                        onChange={handleInputChange}
-                        required
-                        className={getInputClassName('bewoerbene_position')}
-                      />
+                    <input
+                      type="text"
+                      name="bewoerbene_position"
+                      value={formData.bewoerbene_position}
+                      onChange={handleInputChange}
+                      required
+                      className={getInputClassName('bewoerbene_position')}
+                    />
                     {renderError('bewoerbene_position')}
                   </div>
-                </div>
-              </div>
-
-              {/* Banking Information */}
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4 text-black">Bankdaten</h3>
-                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
                       IBAN *
                     </label>
-                                          <input
-                        type="text"
-                        name="iban"
-                        value={formData.iban}
-                        onChange={handleInputChange}
-                        required
-                        className={getInputClassName('iban')}
-                      />
+                    <input
+                      type="text"
+                      name="iban"
+                      value={formData.iban}
+                      onChange={handleInputChange}
+                      required
+                      className={getInputClassName('iban')}
+                    />
                     {renderError('iban')}
                   </div>
                   <div>
@@ -886,13 +894,6 @@ export default function PersonalInfoForm() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     />
                   </div>
-                </div>
-              </div>
-
-              {/* German-specific Information */}
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4 text-black">Deutsche Angaben</h3>
-                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-black mb-1">
                       Renten-Vers. Nr.
@@ -955,195 +956,195 @@ export default function PersonalInfoForm() {
                   </div>
                 </div>
               </div>
+
             </div>
+          </div>
 
-            {/* Right Column - Additional Information */}
-            <div className="space-y-4 sm:space-y-6">
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Zusätzliche Informationen</h3>
-                <div className="space-y-3 sm:space-y-4">
-                  <div>
-                    <p className="text-sm text-black mb-3">
-                      Liegt zu Beginn des Beschäftigungsverhältnisses eine Meldung als arbeits- oder ausbildungssuchend bei der Agentur für Arbeit vor oder/und lautet der dortige Status &ldquo;beschäftigungslos&rdquo;?
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="agentur_meldung"
-                          value="nein"
-                          checked={formData.agentur_meldung === 'nein'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Nein</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="agentur_meldung"
-                          value="ja"
-                          checked={formData.agentur_meldung === 'ja'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Ja bei der Agentur für Arbeit in</label>
-                      </div>
-                      {formData.agentur_meldung === 'ja' && (
-                        <input
-                          type="text"
-                          name="agentur_ort"
-                          value={formData.agentur_ort}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        />
-                      )}
+          {/* Div 2: Additional Information and Declaration (No Grid) */}
+          <div className="space-y-4 sm:space-y-6 mt-6">
+            {/* Additional Information */}
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Zusätzliche Informationen</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <div>
+                  <p className="text-sm text-black mb-3">
+                    Liegt zu Beginn des Beschäftigungsverhältnisses eine Meldung als arbeits- oder ausbildungssuchend bei der Agentur für Arbeit vor oder/und lautet der dortige Status &ldquo;beschäftigungslos&rdquo;?
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="agentur_meldung"
+                        value="nein"
+                        checked={formData.agentur_meldung === 'nein'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Nein</label>
                     </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-black mb-3">
-                      Bestehen derzeit weitere Beschäftigungsverhältnisse?
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="weitere_beschaeftigungen"
-                          value="nein"
-                          checked={formData.weitere_beschaeftigungen === 'nein'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Nein</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="weitere_beschaeftigungen"
-                          value="ja"
-                          checked={formData.weitere_beschaeftigungen === 'ja'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Ja, ich übe folgende Beschäftigungen aus</label>
-                      </div>
-                      {formData.weitere_beschaeftigungen === 'ja' && (
-                        <textarea
-                          name="beschaeftigungen_details"
-                          value={formData.beschaeftigungen_details}
-                          onChange={handleInputChange}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        />
-                      )}
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="agentur_meldung"
+                        value="ja"
+                        checked={formData.agentur_meldung === 'ja'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Ja bei der Agentur für Arbeit in</label>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Arbeitgeber und Arbeitgeber Adresse
-                    </label>
-                    <textarea
-                      name="arbeitgeber_adresse"
-                      value={formData.arbeitgeber_adresse}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-black mb-3">
-                      Wurde in den letzten zwölf Kalendermonaten einer kurzfristigen Beschäftigung nachgegangen?
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="kurzfristige_beschaeftigung"
-                          value="nein"
-                          checked={formData.kurzfristige_beschaeftigung === 'nein'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Nein</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="kurzfristige_beschaeftigung"
-                          value="ja"
-                          checked={formData.kurzfristige_beschaeftigung === 'ja'}
-                          onChange={handleInputChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <label className="ml-2 block text-sm text-black">Ja und zwar bis zum</label>
-                      </div>
-                      {formData.kurzfristige_beschaeftigung === 'ja' && (
-                        <input
-                          type="date"
-                          name="kurzfristige_bis"
-                          value={formData.kurzfristige_bis}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Notizen
-                    </label>
-                    <textarea
-                      name="notizen"
-                      value={formData.notizen}
-                      onChange={handleInputChange}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    />
+                    {formData.agentur_meldung === 'ja' && (
+                      <input
+                        type="text"
+                        name="agentur_ort"
+                        value={formData.agentur_ort}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      />
+                    )}
                   </div>
                 </div>
+
+                <div>
+                  <p className="text-sm text-black mb-3">
+                    Bestehen derzeit weitere Beschäftigungsverhältnisse?
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="weitere_beschaeftigungen"
+                        value="nein"
+                        checked={formData.weitere_beschaeftigungen === 'nein'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Nein</label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="weitere_beschaeftigungen"
+                        value="ja"
+                        checked={formData.weitere_beschaeftigungen === 'ja'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Ja, ich übe folgende Beschäftigungen aus</label>
+                    </div>
+                    {formData.weitere_beschaeftigungen === 'ja' && (
+                      <textarea
+                        name="beschaeftigungen_details"
+                        value={formData.beschaeftigungen_details}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Arbeitgeber und Arbeitgeber Adresse
+                  </label>
+                  <textarea
+                    name="arbeitgeber_adresse"
+                    value={formData.arbeitgeber_adresse}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-sm text-black mb-3">
+                    Liegt eine kurzfristige Beschäftigung vor?
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="kurzfristige_beschaeftigung"
+                        value="nein"
+                        checked={formData.kurzfristige_beschaeftigung === 'nein'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Nein</label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="kurzfristige_beschaeftigung"
+                        value="ja"
+                        checked={formData.kurzfristige_beschaeftigung === 'ja'}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-2 block text-sm text-black">Ja und zwar bis zum</label>
+                    </div>
+                    {formData.kurzfristige_beschaeftigung === 'ja' && (
+                      <input
+                        type="date"
+                        name="kurzfristige_bis"
+                        value={formData.kurzfristige_bis}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Notizen
+                  </label>
+                  <textarea
+                    name="notizen"
+                    value={formData.notizen}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  />
+                </div>
               </div>
+            </div>
 
-
-
-              {/* Declaration */}
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Erklärung</h3>
-                <p className="text-sm text-black leading-relaxed mb-4 sm:mb-6">
-                  Ich versichere, dass die auf diesem Dokument gemachten Angaben der Wahrheit entsprechen und ich verpflichte mich, den Arbeitgeber über alle Änderungen unverzüglich zu informieren.
-                </p>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-black">Ort, Datum:</span>
-                      <div className="flex-1 border-b-2 border-gray-400">
-                        <input
-                          type="text"
-                          name="erklarung_ort_datum"
-                          value={formData.erklarung_ort_datum}
-                          onChange={handleInputChange}
-                          placeholder="Hamburg, 15.12.2024"
-                          className="w-full px-2 py-1 border-none outline-none bg-transparent text-black placeholder-gray-500 text-sm"
-                        />
-                        {renderError('erklarung_ort_datum')}
-                      </div>
+            {/* Declaration */}
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Erklärung</h3>
+              <p className="text-sm text-black leading-relaxed mb-4 sm:mb-6">
+                Ich versichere, dass die auf diesem Dokument gemachten Angaben der Wahrheit entsprechen und ich verpflichte mich, den Arbeitgeber über alle Änderungen unverzüglich zu informieren.
+              </p>
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6 mt-4 sm:mt-6">
+                <div className="w-full lg:w-1/3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <span className="text-sm font-medium text-black whitespace-nowrap">Ort, Datum:</span>
+                    <div className="flex-1 border-b-2 border-gray-400 min-w-0">
+                      <input
+                        type="text"
+                        name="erklarung_ort_datum"
+                        value={formData.erklarung_ort_datum}
+                        onChange={handleInputChange}
+                        placeholder="Hamburg, 15.12.2024"
+                        className="w-full px-2 py-1 border-none outline-none bg-transparent text-black placeholder-gray-500 text-sm"
+                      />
+                      {renderError('erklarung_ort_datum')}
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-black mb-2">
-                      Unterschrift:
-                    </label>
-                    <SignatureInput
-                      value={formData.erklarung_unterschrift}
-                      onChange={(value) => setFormData(prev => ({ ...prev, erklarung_unterschrift: value }))}
-                      placeholder="Unterschrift hier zeichnen"
-                      className="w-full"
-                    />
-                    {renderError('erklarung_unterschrift')}
-                  </div>
+                </div>
+                <div className="w-full lg:w-2/3">
+                  <label className="block text-sm font-medium text-black mb-2">
+                    Unterschrift:
+                  </label>
+                  <SignatureInput
+                    value={formData.erklarung_unterschrift}
+                    onChange={(value) => setFormData(prev => ({ ...prev, erklarung_unterschrift: value }))}
+                    placeholder="Unterschrift hier zeichnen"
+                    className="w-full"
+                  />
+                  {renderError('erklarung_unterschrift')}
                 </div>
               </div>
             </div>

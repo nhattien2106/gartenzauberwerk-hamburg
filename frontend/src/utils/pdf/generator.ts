@@ -229,7 +229,6 @@ export class PDFGenerator {
     yPos += 4; // Increased from 3 to 4
     this.pdf.setFontSize(7);
     this.pdf.setFont('helvetica', 'bold');
-    this.pdf.text('Bankdaten', leftMargin, yPos);
     yPos += 4; // Increased from 3 to 4
 
     this.pdf.setFontSize(7);
